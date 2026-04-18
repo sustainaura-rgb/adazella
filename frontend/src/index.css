@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-app: 250 250 252;
+    --bg-surface: 255 255 255;
+    --bg-card: 255 255 255;
+    --text-primary: 15 23 42;
+    --text-secondary: 71 85 105;
+    --text-muted: 148 163 184;
+    --border: 226 232 240;
+  }
+
+  .dark {
+    --bg-app: 6 10 20;
+    --bg-surface: 12 18 34;
+    --bg-card: 17 24 39;
+    --text-primary: 241 245 249;
+    --text-secondary: 148 163 184;
+    --text-muted: 100 116 139;
+    --border: 30 41 59;
+  }
+
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-[rgb(var(--bg-app))] text-[rgb(var(--text-primary))] font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border))] rounded-2xl shadow-sm;
+  }
+}

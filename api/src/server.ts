@@ -7,6 +7,7 @@ import { amazonOAuthRouter, amazonOAuthCallback } from "./routes/amazon-oauth.js
 import { overviewRouter } from "./routes/overview.js";
 import { campaignsRouter } from "./routes/campaigns.js";
 import { searchTermsRouter } from "./routes/search-terms.js";
+import { productsRouter } from "./routes/products.js";
 import { profileRouter } from "./routes/profile.js";
 import { requireAuth } from "./middleware/auth.js";
 
@@ -36,6 +37,7 @@ app.use("/api/me", requireAuth, meRouter);
 app.use("/api/overview", requireAuth, overviewRouter);   // /api/overview + /api/overview/alerts
 app.use("/api/campaigns", requireAuth, campaignsRouter); // GET / + PATCH :id/status + PATCH :id/budget
 app.use("/api/search-terms", requireAuth, searchTermsRouter);
+app.use("/api/products", requireAuth, productsRouter);
 app.use("/api/profile", requireAuth, profileRouter);
 
 // ── Error handler ──

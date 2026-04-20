@@ -6,6 +6,7 @@ import ResetPassword from "./pages/ResetPassword";
 import OverviewPage from "./pages/OverviewPage";
 import CampaignsPage from "./pages/CampaignsPage";
 import SearchTermsPage from "./pages/SearchTermsPage";
+import ProductsPage from "./pages/ProductsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -25,7 +26,7 @@ export default function App() {
         <Route index               element={<OverviewPage />} />
         <Route path="campaigns"     element={<CampaignsPage />} />
         <Route path="search-terms"  element={<SearchTermsPage />} />
-        <Route path="products"      element={<PlaceholderPage title="Products" description="Track performance per ASIN. See which products are converting and which are burning budget." />} />
+        <Route path="products"      element={<ProductsPage />} />
         <Route path="opportunities" element={<PlaceholderPage title="Opportunities" description="AI-powered suggestions: harvest high-performing search terms, add negatives for wasteful ones, upgrade match types." />} />
         <Route path="negatives"     element={<PlaceholderPage title="Negatives" description="View and manage all negative keywords. See historical waste for each one." />} />
         <Route path="settings"      element={<PlaceholderPage title="Settings" description="Configure your product profile: include/exclude keywords, competitor brands, target ACoS." />} />

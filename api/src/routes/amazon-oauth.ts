@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import axios from "axios";
 import crypto from "crypto";
 import { supabaseAdmin } from "../lib/supabase.js";
@@ -42,8 +42,9 @@ amazonOAuthRouter.get("/start", requireAuth, (req, res) => {
   res.json({ url: `${AMAZON_AUTHORIZE_URL}?${params.toString()}` });
 });
 
-// GET /api/oauth/amazon/callback — Amazon redirects here after consent
-amazonOAuthRouter.get("/callback", async (req, res) => {
+// Shared callback handler — can be mounted at ANY path matching the LWA profile's
+// Allowed Return URL (e.g. "/callback" or "/api/oauth/amazon/callback").
+export async function amazonOAuthCallback(req: Request, res: Response) {
   const { code, state, error } = req.query as Record<string, string>;
 
   const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -109,7 +110,10 @@ amazonOAuthRouter.get("/callback", async (req, res) => {
     console.error("Amazon OAuth exchange failed:", err.response?.data || err.message);
     res.redirect(`${frontend}/dashboard?amazon_error=token_exchange_failed`);
   }
-});
+}
+
+// Also expose at /api/oauth/amazon/callback for backward compatibility
+amazonOAuthRouter.get("/callback", amazonOAuthCallback);
 
 // POST /api/oauth/amazon/disconnect
 amazonOAuthRouter.post("/disconnect", requireAuth, async (req, res) => {

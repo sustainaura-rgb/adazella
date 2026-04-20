@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
-import { amazonOAuthRouter } from "./routes/amazon-oauth.js";
+import { amazonOAuthRouter, amazonOAuthCallback } from "./routes/amazon-oauth.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const app = express();
@@ -24,7 +24,8 @@ app.use(express.json({ limit: "1mb" }));
 
 // ── Public routes ──
 app.use("/api/health", healthRouter);
-app.use("/api/oauth/amazon", amazonOAuthRouter);   // OAuth callback is public
+app.use("/api/oauth/amazon", amazonOAuthRouter);   // OAuth start + disconnect (callback also available here for backward-compat)
+app.get("/callback", amazonOAuthCallback);         // Matches Amazon LWA "Allowed Return URL" of http://localhost:3000/callback
 
 // ── Authenticated routes ──
 app.use("/api/me", requireAuth, meRouter);
@@ -35,7 +36,23 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: "Internal server error" });
 });
 
-const port = Number(process.env.PORT) || 4000;
+// ── Startup diagnostics — safely show which env vars loaded ──
+function envStatus(name: string): string {
+  const v = process.env[name];
+  if (!v) return "❌ MISSING";
+  if (v.length < 8) return `⚠️  SHORT (${v.length} chars)`;
+  return `✅ loaded (${v.slice(0, 4)}...${v.slice(-4)}, ${v.length} chars)`;
+}
+
+const port = Number(process.env.PORT) || 3000;
 app.listen(port, () => {
   console.log(`🚀 AdPilot API listening on http://localhost:${port}`);
+  console.log("── Env check ──");
+  console.log("SUPABASE_URL              :", envStatus("SUPABASE_URL"));
+  console.log("SUPABASE_ANON_KEY         :", envStatus("SUPABASE_ANON_KEY"));
+  console.log("SUPABASE_SERVICE_ROLE_KEY :", envStatus("SUPABASE_SERVICE_ROLE_KEY"));
+  console.log("AMAZON_ADS_CLIENT_ID      :", envStatus("AMAZON_ADS_CLIENT_ID"));
+  console.log("AMAZON_ADS_CLIENT_SECRET  :", envStatus("AMAZON_ADS_CLIENT_SECRET"));
+  console.log("AMAZON_ADS_REDIRECT_URI   :", process.env.AMAZON_ADS_REDIRECT_URI || "❌ MISSING");
+  console.log("───────────────");
 });

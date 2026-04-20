@@ -9,7 +9,7 @@ import SearchTermsPage from "./pages/SearchTermsPage";
 import ProductsPage from "./pages/ProductsPage";
 import NegativesPage from "./pages/NegativesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
+import SettingsPage from "./pages/SettingsPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -31,7 +31,7 @@ export default function App() {
         <Route path="products"      element={<ProductsPage />} />
         <Route path="opportunities" element={<OpportunitiesPage />} />
         <Route path="negatives"     element={<NegativesPage />} />
-        <Route path="settings"      element={<PlaceholderPage title="Settings" description="Configure your product profile: include/exclude keywords, competitor brands, target ACoS." />} />
+        <Route path="settings"      element={<SettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

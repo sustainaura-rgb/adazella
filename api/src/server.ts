@@ -5,6 +5,7 @@ import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
 import { amazonOAuthRouter, amazonOAuthCallback } from "./routes/amazon-oauth.js";
 import { overviewRouter } from "./routes/overview.js";
+import { campaignsRouter } from "./routes/campaigns.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const app = express();
@@ -31,6 +32,7 @@ app.get("/callback", amazonOAuthCallback);         // Matches Amazon LWA "Allowe
 // ── Authenticated routes ──
 app.use("/api/me", requireAuth, meRouter);
 app.use("/api/overview", requireAuth, overviewRouter);   // /api/overview + /api/overview/alerts
+app.use("/api/campaigns", requireAuth, campaignsRouter); // GET / + PATCH :id/status + PATCH :id/budget
 
 // ── Error handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

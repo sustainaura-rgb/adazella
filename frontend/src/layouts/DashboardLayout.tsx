@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import {
   Home, LayoutDashboard, Search, Package, Sparkles, Ban, Settings,
-  Zap, LogOut, PanelLeftClose, PanelLeftOpen, Link2,
+  Zap, LogOut, PanelLeftClose, PanelLeftOpen, Link2, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -27,9 +27,9 @@ const NAV_ITEMS = [
 export default function DashboardLayout() {
   const { user, signOut } = useAuth();
   const nav = useNavigate();
-  const loc = useLocation();
   const [me, setMe] = useState<Me | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
     api.get<Me>("/api/me").then((r) => setMe(r.data)).catch(() => {});
@@ -39,9 +39,9 @@ export default function DashboardLayout() {
     ? Math.max(0, Math.ceil((new Date(me.workspace.trial_ends_at).getTime() - Date.now()) / 86400000))
     : 0;
 
-  // If user hasn't connected Amazon, show the connect CTA instead of pages
-  // (unless they're on Settings which doesn't need Amazon)
-  const needsAmazon = !me?.amazon_connection && !loc.pathname.includes("/settings");
+  // Show a banner (non-blocking) if user hasn't connected Amazon.
+  // Dashboard is still fully usable with mock/seeded data.
+  const showConnectBanner = me !== null && !me?.amazon_connection && !bannerDismissed;
 
   return (
     <div className="min-h-screen flex bg-[rgb(var(--bg-app))]">
@@ -133,56 +133,42 @@ export default function DashboardLayout() {
       </aside>
 
       {/* ═══ Main ═══ */}
-      <main className="flex-1 overflow-x-hidden">
-        {needsAmazon ? <AmazonConnectPrompt me={me} /> : <Outlet />}
-      </main>
-    </div>
-  );
-}
-
-function AmazonConnectPrompt({ me: _me }: { me: Me | null }) {
-  const [connecting, setConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleConnect() {
-    setConnecting(true);
-    setError(null);
-    try {
-      const { data } = await api.get<{ url: string }>("/api/oauth/amazon/start");
-      window.location.href = data.url;
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.message);
-      setConnecting(false);
-    }
-  }
-
-  return (
-    <div className="p-6 md:p-12">
-      <div className="max-w-2xl mx-auto card p-10 text-center animate-slide-up">
-        <div className="w-16 h-16 mx-auto bg-brand-100 dark:bg-brand-500/10 rounded-full flex items-center justify-center mb-5">
-          <Link2 className="text-brand-600" size={28} />
-        </div>
-        <h1 className="text-2xl font-bold mb-2">Connect your Amazon Ads account</h1>
-        <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-          We'll securely pull your campaigns, search terms, and performance data. You can disconnect anytime.
-        </p>
-        {error && (
-          <div className="mb-4 text-sm text-red-600 bg-red-50 dark:bg-red-500/10 px-4 py-2 rounded-lg inline-block">
-            {error}
+      <main className="flex-1 overflow-x-hidden flex flex-col">
+        {/* Non-blocking connect banner */}
+        {showConnectBanner && (
+          <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/30 px-6 py-3 flex items-center gap-3 text-sm">
+            <AlertTriangle size={16} className="text-amber-600 shrink-0" />
+            <span className="text-amber-800 dark:text-amber-300 flex-1">
+              Connect your Amazon Ads account to see real campaign data.
+              Currently showing <strong>demo data</strong>.
+            </span>
+            <button
+              onClick={async () => {
+                try {
+                  const { data } = await api.get<{ url: string }>("/api/oauth/amazon/start");
+                  window.location.href = data.url;
+                } catch {
+                  // silent
+                }
+              }}
+              className="px-3 py-1.5 bg-gradient-to-br from-brand-500 to-purple-500 text-white rounded-lg text-xs font-semibold hover:shadow transition inline-flex items-center gap-1.5"
+            >
+              <Link2 size={13} /> Connect Amazon
+            </button>
+            <button
+              onClick={() => setBannerDismissed(true)}
+              className="text-amber-600 hover:text-amber-800 text-xs font-semibold"
+              title="Dismiss"
+            >
+              ✕
+            </button>
           </div>
         )}
-        <button
-          onClick={handleConnect}
-          disabled={connecting}
-          className="px-6 py-3 bg-gradient-to-br from-brand-500 to-purple-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-brand-500/30 transition disabled:opacity-60 inline-flex items-center gap-2"
-        >
-          <Link2 size={16} />
-          {connecting ? "Redirecting to Amazon..." : "Connect Amazon Account"}
-        </button>
-        <p className="text-xs text-slate-400 mt-5">
-          You'll be redirected to Amazon to authorize AdPilot. We never see your password.
-        </p>
-      </div>
+
+        <div className="flex-1">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }

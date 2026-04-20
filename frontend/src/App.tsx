@@ -4,6 +4,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import OverviewPage from "./pages/OverviewPage";
+import CampaignsPage from "./pages/CampaignsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -21,7 +22,7 @@ export default function App() {
         <ProtectedRoute><DashboardLayout /></ProtectedRoute>
       }>
         <Route index               element={<OverviewPage />} />
-        <Route path="campaigns"     element={<PlaceholderPage title="Campaigns" description="View and manage all your Amazon Sponsored Products campaigns. Pause/enable, edit budgets, see drill-down analytics." />} />
+        <Route path="campaigns"     element={<CampaignsPage />} />
         <Route path="search-terms"  element={<PlaceholderPage title="Search Terms" description="Analyze customer search queries with bucket categorization (Winners, Wasted, Review) and negativity scoring." />} />
         <Route path="products"      element={<PlaceholderPage title="Products" description="Track performance per ASIN. See which products are converting and which are burning budget." />} />
         <Route path="opportunities" element={<PlaceholderPage title="Opportunities" description="AI-powered suggestions: harvest high-performing search terms, add negatives for wasteful ones, upgrade match types." />} />

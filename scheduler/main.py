@@ -26,9 +26,34 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.environ["DATABASE_URL"]
-AMAZON_CLIENT_ID = os.environ["AMAZON_ADS_CLIENT_ID"]
-AMAZON_CLIENT_SECRET = os.environ["AMAZON_ADS_CLIENT_SECRET"]
+# ── Env check with clear error messages (so users see typos) ──
+def _require_env(name: str) -> str:
+    val = os.environ.get(name)
+    if not val:
+        logger.error("Missing required env var: %s", name)
+        logger.error("Check your scheduler/.env file. Expected variable names:")
+        logger.error("  DATABASE_URL, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,")
+        logger.error("  AMAZON_ADS_CLIENT_ID, AMAZON_ADS_CLIENT_SECRET")
+        raise SystemExit(1)
+    return val
+
+
+DATABASE_URL = _require_env("DATABASE_URL")
+AMAZON_CLIENT_ID = _require_env("AMAZON_ADS_CLIENT_ID")
+AMAZON_CLIENT_SECRET = _require_env("AMAZON_ADS_CLIENT_SECRET")
+
+# Print diagnostic so user can see what loaded
+def _status(name: str) -> str:
+    v = os.environ.get(name)
+    if not v: return "❌ MISSING"
+    if len(v) < 8: return f"⚠️  SHORT ({len(v)} chars)"
+    return f"✅ loaded ({v[:4]}...{v[-4:]}, {len(v)} chars)"
+
+logger.info("── Scheduler env check ──")
+logger.info("DATABASE_URL             : %s", _status("DATABASE_URL"))
+logger.info("AMAZON_ADS_CLIENT_ID     : %s", _status("AMAZON_ADS_CLIENT_ID"))
+logger.info("AMAZON_ADS_CLIENT_SECRET : %s", _status("AMAZON_ADS_CLIENT_SECRET"))
+logger.info("─────────────────────────")
 
 token_mgr = WorkspaceTokenManager(DATABASE_URL, AMAZON_CLIENT_ID, AMAZON_CLIENT_SECRET)
 fetcher = AmazonAdsFetcher(DATABASE_URL, token_mgr)

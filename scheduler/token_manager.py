@@ -37,7 +37,7 @@ class WorkspaceTokenManager:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT refresh_token_enc, access_token_enc, access_token_expires_at
+                    """SELECT refresh_token, access_token, access_token_expires_at
                        FROM amazon_connections
                        WHERE workspace_id = %s AND profile_id = %s AND status = 'active'""",
                     (workspace_id, profile_id),
@@ -46,8 +46,8 @@ class WorkspaceTokenManager:
                 if not row:
                     raise RuntimeError(f"No active Amazon connection for workspace {workspace_id}")
 
-                refresh_token = bytes(row[0]).decode("utf-8")
-                access_token = bytes(row[1]).decode("utf-8") if row[1] else None
+                refresh_token = row[0]
+                access_token = row[1]
                 expires_at = row[2]
 
             # Still valid? (with 5 min buffer)
@@ -63,15 +63,10 @@ class WorkspaceTokenManager:
             with conn.cursor() as cur:
                 cur.execute(
                     """UPDATE amazon_connections
-                       SET access_token_enc = %s,
+                       SET access_token = %s,
                            access_token_expires_at = %s
                        WHERE workspace_id = %s AND profile_id = %s""",
-                    (
-                        psycopg2.Binary(new_access.encode("utf-8")),
-                        new_expires,
-                        workspace_id,
-                        profile_id,
-                    ),
+                    (new_access, new_expires, workspace_id, profile_id),
                 )
                 conn.commit()
 
@@ -90,6 +85,16 @@ class WorkspaceTokenManager:
             },
             timeout=30,
         )
+        if resp.status_code != 200:
+            # Amazon returns JSON with "error" and "error_description"
+            try:
+                err = resp.json()
+                logger.error("Amazon token refresh failed: %s — %s",
+                             err.get("error", "unknown"),
+                             err.get("error_description", resp.text[:200]))
+            except Exception:
+                logger.error("Amazon token refresh failed: %s — %s",
+                             resp.status_code, resp.text[:300])
         resp.raise_for_status()
         data = resp.json()
         expires_at = datetime.now(timezone.utc) + timedelta(seconds=data["expires_in"])

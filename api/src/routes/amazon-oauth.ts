@@ -89,7 +89,8 @@ export async function amazonOAuthCallback(req: Request, res: Response) {
       return res.redirect(`${frontend}/dashboard?amazon_error=no_profiles`);
     }
 
-    // Store connection for each profile (user can pick which to monitor)
+    // Store connection for each profile (user can pick which to monitor).
+    // Tokens stored as plain TEXT — encryption can be added later at the app layer.
     for (const p of profiles) {
       await supabaseAdmin.from("amazon_connections").upsert({
         workspace_id: stateData.workspaceId,
@@ -98,8 +99,8 @@ export async function amazonOAuthCallback(req: Request, res: Response) {
         account_name: p.accountInfo?.name || null,
         country_code: p.countryCode || null,
         currency_code: p.currencyCode || null,
-        refresh_token_enc: Buffer.from(refresh_token, "utf8"),    // TODO: proper encryption
-        access_token_enc: Buffer.from(access_token, "utf8"),
+        refresh_token: refresh_token,
+        access_token: access_token,
         access_token_expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
         status: "active",
       }, { onConflict: "workspace_id,profile_id" });

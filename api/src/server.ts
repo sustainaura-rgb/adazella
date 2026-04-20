@@ -6,6 +6,8 @@ import { meRouter } from "./routes/me.js";
 import { amazonOAuthRouter, amazonOAuthCallback } from "./routes/amazon-oauth.js";
 import { overviewRouter } from "./routes/overview.js";
 import { campaignsRouter } from "./routes/campaigns.js";
+import { searchTermsRouter } from "./routes/search-terms.js";
+import { profileRouter } from "./routes/profile.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const app = express();
@@ -33,6 +35,8 @@ app.get("/callback", amazonOAuthCallback);         // Matches Amazon LWA "Allowe
 app.use("/api/me", requireAuth, meRouter);
 app.use("/api/overview", requireAuth, overviewRouter);   // /api/overview + /api/overview/alerts
 app.use("/api/campaigns", requireAuth, campaignsRouter); // GET / + PATCH :id/status + PATCH :id/budget
+app.use("/api/search-terms", requireAuth, searchTermsRouter);
+app.use("/api/profile", requireAuth, profileRouter);
 
 // ── Error handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

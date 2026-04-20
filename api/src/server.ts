@@ -4,6 +4,7 @@ import cors from "cors";
 import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
 import { amazonOAuthRouter, amazonOAuthCallback } from "./routes/amazon-oauth.js";
+import { overviewRouter } from "./routes/overview.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const app = express();
@@ -29,6 +30,7 @@ app.get("/callback", amazonOAuthCallback);         // Matches Amazon LWA "Allowe
 
 // ── Authenticated routes ──
 app.use("/api/me", requireAuth, meRouter);
+app.use("/api/overview", requireAuth, overviewRouter);   // /api/overview + /api/overview/alerts
 
 // ── Error handler ──
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

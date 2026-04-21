@@ -285,7 +285,10 @@ function SortTh({ label, col, sortKey, sortAsc, onClick, right }: {
     >
       <span className="inline-flex items-center gap-1">
         {label}
-        <ArrowUpDown size={10} className={active ? "text-brand-500" : "opacity-40"} />
+        <ArrowUpDown size={10} className={cn(
+          active ? "text-brand-500" : "opacity-40",
+          active && sortAsc && "rotate-180"
+        )} />
       </span>
     </th>
   );

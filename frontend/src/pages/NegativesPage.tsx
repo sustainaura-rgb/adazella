@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Search, Download, Loader2, ArrowUpDown, Ban, DollarSign, MousePointerClick,
+  Search, Download, Loader2, Ban, DollarSign, MousePointerClick,
   ShieldCheck, AlertTriangle, ChevronRight, ChevronDown,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";

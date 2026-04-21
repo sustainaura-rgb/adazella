@@ -12,8 +12,16 @@ import { negativesRouter } from "./routes/negatives.js";
 import { opportunitiesRouter } from "./routes/opportunities.js";
 import { profileRouter } from "./routes/profile.js";
 import { requireAuth } from "./middleware/auth.js";
+import { securityHeaders, requestSizeGuard } from "./middleware/security.js";
+import { readLimiter, mutationLimiter, authLimiter } from "./middleware/rate-limit.js";
 
 const app = express();
+
+// Render / Netlify sit behind a proxy — trust it so rate-limit sees real client IPs
+app.set("trust proxy", 1);
+
+// ── Security headers (Helmet + CSP + HSTS + referrer policy) ──
+app.use(securityHeaders);
 
 // ── CORS ──
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
@@ -27,17 +35,30 @@ app.use(cors({
   credentials: true,
 }));
 
+// ── Body parsing + request size cap ──
 app.use(express.json({ limit: "1mb" }));
+app.use(requestSizeGuard(1_000_000));
+
+// ── Global rate limit on all /api traffic ──
+app.use("/api", readLimiter);
+
+// ── Mutation rate limit (stricter) on write methods ──
+app.use("/api", (req, res, next) => {
+  if (req.method === "PATCH" || req.method === "POST" || req.method === "DELETE" || req.method === "PUT") {
+    return mutationLimiter(req, res, next);
+  }
+  next();
+});
 
 // ── Public routes ──
 app.use("/api/health", healthRouter);
-app.use("/api/oauth/amazon", amazonOAuthRouter);   // OAuth start + disconnect (callback also available here for backward-compat)
-app.get("/callback", amazonOAuthCallback);         // Matches Amazon LWA "Allowed Return URL" of http://localhost:3000/callback
+app.use("/api/oauth/amazon", authLimiter, amazonOAuthRouter);   // OAuth start + disconnect
+app.get("/callback", authLimiter, amazonOAuthCallback);         // Legacy callback path
 
 // ── Authenticated routes ──
 app.use("/api/me", requireAuth, meRouter);
-app.use("/api/overview", requireAuth, overviewRouter);   // /api/overview + /api/overview/alerts
-app.use("/api/campaigns", requireAuth, campaignsRouter); // GET / + PATCH :id/status + PATCH :id/budget
+app.use("/api/overview", requireAuth, overviewRouter);
+app.use("/api/campaigns", requireAuth, campaignsRouter);
 app.use("/api/search-terms", requireAuth, searchTermsRouter);
 app.use("/api/products", requireAuth, productsRouter);
 app.use("/api/negatives", requireAuth, negativesRouter);
@@ -50,7 +71,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: "Internal server error" });
 });
 
-// ── Startup diagnostics — safely show which env vars loaded ──
+// ── Startup diagnostics ──
 function envStatus(name: string): string {
   const v = process.env[name];
   if (!v) return "❌ MISSING";

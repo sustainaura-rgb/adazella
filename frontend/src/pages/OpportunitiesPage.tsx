@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Loader2, Sparkles, Ban, TrendingUp, CheckSquare, Square } from "lucide-react";
+import { Download, Sparkles, Ban, TrendingUp, CheckSquare, Square } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { SkeletonTable } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type Mode = "harvest" | "negatives" | "upgrades";
 
@@ -185,12 +187,16 @@ export default function OpportunitiesPage() {
       </div>
 
       {/* Table */}
-      <div className="card overflow-hidden">
+      <div className={cn("overflow-hidden", !loading && rows.length > 0 && "card")}>
         {loading ? (
-          <div className="p-10 text-center"><Loader2 className="animate-spin text-brand-500 mx-auto" size={28} /></div>
+          <SkeletonTable rows={8} cols={6} />
         ) : rows.length === 0 ? (
-          <div className="p-10 text-center text-slate-400">
-            No {mode} opportunities found in the last {days} days.
+          <div className="card">
+            <EmptyState
+              icon={Sparkles}
+              title={`No ${mode} opportunities`}
+              description={`We didn't find any ${mode} suggestions in the last ${days} days. Try expanding the date range or wait for more data to accumulate.`}
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">

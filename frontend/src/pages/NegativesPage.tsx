@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Search, Download, Loader2, Ban, DollarSign, MousePointerClick,
+  Search, Download, Ban, DollarSign, MousePointerClick,
   ShieldCheck, AlertTriangle, ChevronRight, ChevronDown,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 
 interface Negative {
   id: number;
@@ -175,7 +176,7 @@ export default function NegativesPage() {
     a.click();
   }
 
-  if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin text-brand-500" size={32} /></div>;
+  if (loading) return <PageSkeleton rows={8} cols={6} />;
 
   const topWaste = [...rows]
     .filter((r) => r.cost > 0)

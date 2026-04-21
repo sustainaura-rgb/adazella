@@ -5,9 +5,11 @@ import {
 } from "recharts";
 import {
   Eye, MousePointerClick, DollarSign, ShoppingCart, Percent,
-  ArrowUp, ArrowDown, Package, AlertTriangle, Bell, XCircle, Loader2,
+  ArrowUp, ArrowDown, Package, AlertTriangle, Bell, XCircle,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const PALETTE = ["#6366f1", "#a855f7", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#ef4444"];
 const DAYS_OPTIONS = [7, 14, 30, 60, 90];
@@ -84,19 +86,17 @@ export default function OverviewPage() {
   }, [data]);
 
   if (loading && !data) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="animate-spin text-brand-500" size={32} />
-      </div>
-    );
+    return <PageSkeleton rows={6} cols={5} />;
   }
 
   if (!data) {
     return (
-      <div className="p-6">
-        <div className="card p-10 text-center text-slate-500">
-          No data yet. Start the scheduler or seed mock data to see your metrics.
-        </div>
+      <div className="p-6 md:p-8 max-w-7xl mx-auto">
+        <EmptyState
+          icon={Bell}
+          title="No data yet"
+          description="Start the scheduler or connect your Amazon Ads account to populate your dashboard with live performance data."
+        />
       </div>
     );
   }

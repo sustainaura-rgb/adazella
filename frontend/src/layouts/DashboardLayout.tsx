@@ -7,6 +7,7 @@ import {
   Zap, LogOut, PanelLeftClose, PanelLeftOpen, Link2, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface Me {
   user: { id: string; email: string };
@@ -108,26 +109,30 @@ export default function DashboardLayout() {
           </div>
         )}
 
-        {/* User + sign out */}
+        {/* User + theme + sign out */}
         <div className="border-t border-[rgb(var(--border))] pt-3 mt-2">
           {sidebarOpen ? (
-            <div>
-              <div className="text-xs text-slate-500 truncate px-1">{user?.email}</div>
+            <div className="flex flex-col gap-1">
+              <div className="text-xs text-slate-500 truncate px-1 mb-1">{user?.email}</div>
+              <ThemeToggle />
               <button
                 onClick={() => signOut().then(() => nav("/login"))}
-                className="mt-2 w-full px-3 py-1.5 text-xs text-slate-500 hover:text-red-500 flex items-center gap-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="w-full px-3 py-1.5 text-xs text-slate-500 hover:text-red-500 flex items-center gap-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <LogOut size={13} /> Sign out
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => signOut().then(() => nav("/login"))}
-              className="w-full p-2 text-slate-500 hover:text-red-500 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800"
-              title="Sign out"
-            >
-              <LogOut size={14} />
-            </button>
+            <div className="flex flex-col gap-1 items-center">
+              <ThemeToggle compact />
+              <button
+                onClick={() => signOut().then(() => nav("/login"))}
+                className="w-full p-2 text-slate-500 hover:text-red-500 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                title="Sign out"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           )}
         </div>
       </aside>

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Download, Loader2, ArrowUpDown, Trophy, AlertTriangle, HelpCircle, MinusCircle } from "lucide-react";
+import { Search, Download, ArrowUpDown, Trophy, AlertTriangle, HelpCircle, MinusCircle } from "lucide-react";
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { scoreSearchTerm, categorizeTerm, negativityColor, type ProductProfile } from "@/lib/negativity";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 
 interface SearchTerm {
   search_term: string;
@@ -123,7 +124,7 @@ export default function SearchTermsPage() {
     a.click();
   }
 
-  if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin text-brand-500" size={32} /></div>;
+  if (loading) return <PageSkeleton rows={8} cols={7} />;
 
   const bucketDonutData = (Object.keys(BUCKET_META) as Bucket[]).map((k) => ({
     name: BUCKET_META[k].label,

@@ -6,6 +6,7 @@ import {
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/cn";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 
 interface Profile {
   include_keywords: string[];
@@ -127,7 +128,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin text-brand-500" size={32} /></div>;
+  if (loading) return <PageSkeleton showKpis={false} rows={5} cols={3} />;
   if (error && !profile) return <div className="p-10 text-center text-red-500">Error: {error}</div>;
   if (!profile) return null;
 

@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Search, ArrowUpDown, Loader2, Play, Pause, Check, X,
+  Search, ArrowUpDown, Loader2, Play, Pause, Check, X, LayoutDashboard,
   Activity, AlertTriangle, Archive, Eye, MousePointerClick, DollarSign, ShoppingCart, Percent,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { toast } from "sonner";
+import { SkeletonKPIRow, SkeletonTable } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface Campaign {
   campaign_id: string;
@@ -93,17 +96,23 @@ export default function CampaignsPage() {
     setRows((rs) => rs.map((r) => r.campaign_id === c.campaign_id ? { ...r, status: next } : r));
     try {
       await api.patch(`/api/campaigns/${c.campaign_id}/status`, { status: next });
+      toast.success(`Campaign ${next === "ENABLED" ? "resumed" : "paused"}`);
     } catch (err) {
       // Revert on failure
       setRows((rs) => rs.map((r) => r.campaign_id === c.campaign_id ? { ...r, status: c.status } : r));
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="animate-spin text-brand-500" size={32} />
+      <div className="p-6 md:p-8 max-w-7xl mx-auto flex flex-col gap-5">
+        <div>
+          <div className="h-7 w-40 bg-slate-200/70 dark:bg-slate-800/70 rounded animate-pulse mb-2" />
+          <div className="h-4 w-64 bg-slate-200/70 dark:bg-slate-800/70 rounded animate-pulse" />
+        </div>
+        <SkeletonKPIRow count={4} />
+        <SkeletonTable rows={8} cols={8} />
       </div>
     );
   }
@@ -177,9 +186,13 @@ export default function CampaignsPage() {
       {/* Table */}
       <div className="card overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-10 text-center text-slate-400">
-            No campaigns match the filters.
-          </div>
+          <EmptyState
+            icon={LayoutDashboard}
+            title={rows.length === 0 ? "No campaigns yet" : "No campaigns match your filters"}
+            description={rows.length === 0
+              ? "Connect your Amazon Ads account to import campaigns, or adjust your filters if you already have data."
+              : "Try clearing your search or toggling the 'Enabled only' filter."}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -338,7 +351,7 @@ function BudgetCell({ campaignId, initialBudget, onUpdated }: {
   async function save() {
     const num = parseFloat(value);
     if (isNaN(num) || num <= 0) {
-      alert("Budget must be a positive number");
+      toast.error("Budget must be a positive number");
       return;
     }
     setSaving(true);
@@ -346,8 +359,9 @@ function BudgetCell({ campaignId, initialBudget, onUpdated }: {
       await api.patch(`/api/campaigns/${campaignId}/budget`, { budget: num });
       onUpdated(num);
       setEditing(false);
+      toast.success(`Budget updated to $${num.toFixed(2)}`);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to update budget");
+      toast.error(err.response?.data?.error || "Failed to update budget");
     } finally {
       setSaving(false);
     }

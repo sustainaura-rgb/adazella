@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Download, Loader2, ArrowUpDown, ExternalLink } from "lucide-react";
+import { Search, Download, ArrowUpDown, ExternalLink } from "lucide-react";
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 
 const PALETTE = ["#6366f1", "#a855f7", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#ef4444"];
 
@@ -112,7 +113,7 @@ export default function ProductsPage() {
     a.click();
   }
 
-  if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin text-brand-500" size={32} /></div>;
+  if (loading) return <PageSkeleton rows={8} cols={6} />;
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto flex flex-col gap-5 animate-fade-in">

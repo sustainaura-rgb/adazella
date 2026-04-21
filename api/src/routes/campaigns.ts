@@ -32,7 +32,7 @@ const DateRangeSchema = z.object({
 async function assertCampaignOwnership(workspaceId: string, campaignId: string) {
   const { data, error } = await supabaseAdmin
     .from("campaigns")
-    .select("campaign_id, workspace_id, campaign_name")
+    .select("campaign_id, workspace_id, campaign_name, status, daily_budget")
     .eq("workspace_id", workspaceId)
     .eq("campaign_id", campaignId)
     .single();

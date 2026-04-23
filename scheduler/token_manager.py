@@ -11,6 +11,8 @@ from datetime import datetime, timezone, timedelta
 import psycopg2
 import requests
 
+from crypto_util import decrypt as _decrypt, encrypt as _encrypt
+
 logger = logging.getLogger(__name__)
 
 AMAZON_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
@@ -46,8 +48,9 @@ class WorkspaceTokenManager:
                 if not row:
                     raise RuntimeError(f"No active Amazon connection for workspace {workspace_id}")
 
-                refresh_token = row[0]
-                access_token = row[1]
+                # Decrypt (backwards compatible — plaintext values pass through)
+                refresh_token = _decrypt(row[0])
+                access_token = _decrypt(row[1]) if row[1] else None
                 expires_at = row[2]
 
             # Still valid? (with 5 min buffer)
@@ -59,14 +62,15 @@ class WorkspaceTokenManager:
             logger.info("Refreshing token for workspace %s, profile %s", workspace_id, profile_id)
             new_access, new_expires = self._refresh(refresh_token)
 
-            # Persist new access token
+            # Persist new access token — always encrypt before write
+            encrypted_access = _encrypt(new_access)
             with conn.cursor() as cur:
                 cur.execute(
                     """UPDATE amazon_connections
                        SET access_token = %s,
                            access_token_expires_at = %s
                        WHERE workspace_id = %s AND profile_id = %s""",
-                    (new_access, new_expires, workspace_id, profile_id),
+                    (encrypted_access, new_expires, workspace_id, profile_id),
                 )
                 conn.commit()
 

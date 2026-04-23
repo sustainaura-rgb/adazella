@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { supabaseAdmin } from "../lib/supabase.js";
+import { writeAudit } from "../lib/audit.js";
 
 export const campaignsRouter = Router();
 
@@ -42,32 +43,7 @@ async function assertCampaignOwnership(workspaceId: string, campaignId: string) 
   return data;
 }
 
-// ────────────────────────────────────────────────
-// Audit log helper
-// ────────────────────────────────────────────────
-async function writeAuditLog(
-  workspaceId: string,
-  userId: string,
-  action: string,
-  targetType: string,
-  targetId: string,
-  before: any,
-  after: any
-) {
-  try {
-    await supabaseAdmin.from("fetch_logs").insert({
-      workspace_id: workspaceId,
-      fetch_type: `audit:${action}`,
-      status: "SUCCESS",
-      records_fetched: 0,
-      error_message: JSON.stringify({ user_id: userId, target_type: targetType, target_id: targetId, before, after }).slice(0, 1800),
-      started_at: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-    });
-  } catch {
-    // Audit log failure should never break the actual operation
-  }
-}
+// (Audit log helper moved to lib/audit.ts — writes to proper audit_logs table)
 
 // ════════════════════════════════════════════════
 // GET /api/campaigns?start_date&end_date&search
@@ -187,8 +163,13 @@ campaignsRouter.patch("/:campaignId/status", async (req, res) => {
     // (left for future phase — with mock data, only local update matters)
 
     // Audit log
-    await writeAuditLog(wsId, userId, "status_change", "campaign", campaignId,
-      { status: owned.status || null }, { status });
+    await writeAudit({
+      workspaceId: wsId, userId,
+      action: "campaign.status_change",
+      targetType: "campaign", targetId: campaignId,
+      before: { status: owned.status || null }, after: { status },
+      req,
+    });
 
     res.json({ campaign: updated });
   } catch (err: any) {
@@ -232,8 +213,13 @@ campaignsRouter.patch("/:campaignId/budget", async (req, res) => {
       .single();
     if (error) throw error;
 
-    await writeAuditLog(wsId, userId, "budget_change", "campaign", campaignId,
-      { daily_budget: before?.daily_budget }, { daily_budget: budget });
+    await writeAudit({
+      workspaceId: wsId, userId,
+      action: "campaign.budget_change",
+      targetType: "campaign", targetId: campaignId,
+      before: { daily_budget: before?.daily_budget }, after: { daily_budget: budget },
+      req,
+    });
 
     res.json({ campaign: updated });
   } catch (err: any) {

@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import axios from "axios";
 import crypto from "crypto";
 import { supabaseAdmin } from "../lib/supabase.js";
+import { encryptOrPassThrough } from "../lib/crypto.js";
+import { writeAudit } from "../lib/audit.js";
 import { requireAuth } from "../middleware/auth.js";
 
 export const amazonOAuthRouter = Router();
@@ -89,8 +91,10 @@ export async function amazonOAuthCallback(req: Request, res: Response) {
       return res.redirect(`${frontend}/dashboard?amazon_error=no_profiles`);
     }
 
-    // Store connection for each profile (user can pick which to monitor).
-    // Tokens stored as plain TEXT — encryption can be added later at the app layer.
+    // Store connection for each profile. Tokens encrypted at-rest with AES-256-GCM
+    // (format: "enc:v1:..."). Python scheduler decrypts using the same DB_ENCRYPTION_KEY.
+    const encryptedRefresh = encryptOrPassThrough(refresh_token);
+    const encryptedAccess  = encryptOrPassThrough(access_token);
     for (const p of profiles) {
       await supabaseAdmin.from("amazon_connections").upsert({
         workspace_id: stateData.workspaceId,
@@ -99,12 +103,23 @@ export async function amazonOAuthCallback(req: Request, res: Response) {
         account_name: p.accountInfo?.name || null,
         country_code: p.countryCode || null,
         currency_code: p.currencyCode || null,
-        refresh_token: refresh_token,
-        access_token: access_token,
+        refresh_token: encryptedRefresh,
+        access_token: encryptedAccess,
         access_token_expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
         status: "active",
       }, { onConflict: "workspace_id,profile_id" });
     }
+
+    // Audit log — record the Amazon connect event (no token values in log)
+    await writeAudit({
+      workspaceId: stateData.workspaceId,
+      userId: stateData.userId,
+      action: "amazon.connect",
+      targetType: "amazon_connection",
+      targetId: profiles.map(p => String(p.profileId)).join(","),
+      after: { profile_count: profiles.length, account_names: profiles.map(p => p.accountInfo?.name).filter(Boolean) },
+      req,
+    });
 
     res.redirect(`${frontend}/dashboard?amazon_connected=1`);
   } catch (err: any) {
@@ -118,10 +133,17 @@ amazonOAuthRouter.get("/callback", amazonOAuthCallback);
 
 // POST /api/oauth/amazon/disconnect
 amazonOAuthRouter.post("/disconnect", requireAuth, async (req, res) => {
-  if (!req.workspaceId) return res.status(500).json({ error: "No workspace" });
+  if (!req.workspaceId || !req.userId) return res.status(500).json({ error: "No workspace" });
   await supabaseAdmin
     .from("amazon_connections")
     .update({ status: "disconnected" })
     .eq("workspace_id", req.workspaceId);
+  await writeAudit({
+    workspaceId: req.workspaceId,
+    userId: req.userId,
+    action: "amazon.disconnect",
+    targetType: "amazon_connection",
+    req,
+  });
   res.json({ status: "disconnected" });
 });

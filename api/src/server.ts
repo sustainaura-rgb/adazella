@@ -1,4 +1,6 @@
 import "dotenv/config";
+import "./lib/logger.js";  // Installs console scrubber on import (side-effect)
+import crypto from "crypto";
 import express from "express";
 import cors from "cors";
 import { healthRouter } from "./routes/health.js";
@@ -35,6 +37,12 @@ app.use(cors({
   credentials: true,
 }));
 
+// ── Request ID tagging (for log correlation + error response surfacing) ──
+app.use((req, _res, next) => {
+  (req as any).requestId = crypto.randomBytes(8).toString("hex");
+  next();
+});
+
 // ── Body parsing + request size cap ──
 app.use(express.json({ limit: "1mb" }));
 app.use(requestSizeGuard(1_000_000));
@@ -65,10 +73,14 @@ app.use("/api/negatives", requireAuth, negativesRouter);
 app.use("/api/opportunities", requireAuth, opportunitiesRouter);
 app.use("/api/profile", requireAuth, profileRouter);
 
-// ── Error handler ──
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error("Unhandled error:", err);
-  res.status(500).json({ error: "Internal server error" });
+// ── Global error handler — sanitized responses, no stack leaks ──
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const requestId = (req as any).requestId || crypto.randomBytes(4).toString("hex");
+  // Full detail server-side (already scrubbed by console wrapper)
+  console.error(`[${requestId}] ${req.method} ${req.path} →`, err.stack || err.message || err);
+  if (!res.headersSent) {
+    res.status((err as any).status || 500).json({ error: "Internal server error", requestId });
+  }
 });
 
 // ── Startup diagnostics ──

@@ -7,6 +7,7 @@ import {
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { PageSkeleton } from "@/components/ui/Skeleton";
+import { formatAcos, acosColorClass } from "@/lib/formatters";
 
 const PALETTE = ["#6366f1", "#a855f7", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#ef4444"];
 
@@ -233,11 +234,8 @@ export default function ProductsPage() {
                     <td className="py-2 px-3 text-right tabular-nums font-semibold text-emerald-600">${r.sales.toFixed(2)}</td>
                     <td className="py-2 px-3 text-right tabular-nums">{r.add_to_cart}</td>
                     <td className="py-2 px-3 text-right tabular-nums">
-                      <span className={cn(
-                        r.acos > 50 ? "text-red-500" : r.acos > 30 ? "text-amber-500" : r.acos > 0 ? "text-emerald-500" : "text-slate-400",
-                        "font-semibold"
-                      )}>
-                        {r.acos.toFixed(1)}%
+                      <span className={cn(acosColorClass(r.acos, r.sales, r.cost), "font-semibold")}>
+                        {formatAcos(r.acos, r.sales, r.cost)}
                       </span>
                     </td>
                   </tr>

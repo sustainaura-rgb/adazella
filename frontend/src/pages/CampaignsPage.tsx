@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { toast } from "sonner";
 import { SkeletonKPIRow, SkeletonTable } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatAcos, acosColorClass } from "@/lib/formatters";
 
 interface Campaign {
   campaign_id: string;
@@ -141,7 +142,7 @@ export default function CampaignsPage() {
           { lbl: "Clicks",        v: summary.clicks.toLocaleString(),       Icon: MousePointerClick,grad: "from-blue-500 to-indigo-500" },
           { lbl: "Spend",         v: "$" + summary.cost.toFixed(2),         Icon: DollarSign,       grad: "from-red-500 to-amber-500" },
           { lbl: "Sales",         v: "$" + summary.sales.toFixed(2),        Icon: ShoppingCart,     grad: "from-emerald-500 to-cyan-500" },
-          { lbl: "ACoS",          v: summary.acos.toFixed(1) + "%",         Icon: Percent,          grad: summary.acos > 30 ? "from-pink-500 to-red-500" : "from-emerald-500 to-cyan-500" },
+          { lbl: "ACoS",          v: formatAcos(summary.acos, summary.sales, summary.cost), Icon: Percent,    grad: summary.sales > 0 && summary.acos > 30 ? "from-pink-500 to-red-500" : "from-emerald-500 to-cyan-500" },
         ].map((k) => {
           const Icon = k.Icon;
           return (
@@ -239,11 +240,8 @@ export default function CampaignsPage() {
                       <td className="py-2 px-3 text-right tabular-nums">{c.orders}</td>
                       <td className="py-2 px-3 text-right tabular-nums font-semibold text-emerald-600">${c.sales.toFixed(2)}</td>
                       <td className="py-2 px-3 text-right tabular-nums">
-                        <span className={cn(
-                          c.acos > 50 ? "text-red-500" : c.acos > 30 ? "text-amber-500" : "text-emerald-500",
-                          "font-semibold"
-                        )}>
-                          {c.acos.toFixed(1)}%
+                        <span className={cn(acosColorClass(c.acos, c.sales, c.cost), "font-semibold")}>
+                          {formatAcos(c.acos, c.sales, c.cost)}
                         </span>
                       </td>
                       {/* Budget (inline editable) */}
@@ -357,8 +355,11 @@ function BudgetCell({ campaignId, initialBudget, onUpdated }: {
     setSaving(true);
     try {
       await api.patch(`/api/campaigns/${campaignId}/budget`, { budget: num });
-      onUpdated(num);
+      // Close edit mode FIRST so the UI updates immediately,
+      // then propagate the new value up + toast.
       setEditing(false);
+      setValue(String(num.toFixed(2)));
+      onUpdated(num);
       toast.success(`Budget updated to $${num.toFixed(2)}`);
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to update budget");

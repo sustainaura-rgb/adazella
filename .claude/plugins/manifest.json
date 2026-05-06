@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "adazella-dev-kit",
+  "version": "0.1.0",
+  "description": "Adazella project's bundled Claude Code skills, agents, and hooks. Install once → every teammate gets the same Claude setup.",
+  "author": "Sustainaura LLC",
+
+  "skills": [
+    "skills/amazon-ads",
+    "skills/stripe-billing",
+    "skills/aws-migration"
+  ],
+
+  "agents": [
+    "agents/code-reviewer.md",
+    "agents/security-auditor.md"
+  ],
+
+  "hooks": {
+    "PreToolUse": "hooks/pre-tool-use.sh",
+    "PostToolUse": "hooks/post-tool-use.sh"
+  },
+
+  "_comment": "When teammates join, they run: claude code plugin install adazella-dev-kit. Their Claude Code instance gets the same skills/agents/hooks as yours."
+}

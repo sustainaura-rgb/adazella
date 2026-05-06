@@ -10,6 +10,8 @@ import {
 import { api } from "@/lib/api";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatAcos, acosColorClass } from "@/lib/formatters";
+import { toast } from "sonner";
 
 const PALETTE = ["#6366f1", "#a855f7", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#ef4444"];
 const DAYS_OPTIONS = [7, 14, 30, 60, 90];
@@ -54,8 +56,9 @@ export default function OverviewPage() {
           setData(ovRes.data);
           setAlerts(alRes.data.alerts || []);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to load overview", err);
+        if (!cancelled) toast.error(err?.response?.data?.error || "Couldn't load dashboard data");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -76,7 +79,7 @@ export default function OverviewPage() {
         Icon: ShoppingCart,   gradient: "from-emerald-500 to-cyan-500" },
       { label: "Orders",      value: t.orders,                       delta: formatDelta(t.orders, y.orders),
         Icon: Package,        gradient: "from-amber-500 to-pink-500" },
-      { label: "ACoS",        value: `${t.acos.toFixed(1)}%`,       delta: formatDelta(t.acos, y.acos), inverse: true,
+      { label: "ACoS",        value: formatAcos(t.acos, t.sales, t.cost), delta: formatDelta(t.acos, y.acos), inverse: true,
         Icon: Percent,        gradient: "from-pink-500 to-red-500" },
       { label: "Clicks",      value: t.clicks.toLocaleString(),     delta: formatDelta(t.clicks, y.clicks),
         Icon: MousePointerClick, gradient: "from-blue-500 to-indigo-500" },
@@ -375,8 +378,8 @@ export default function OverviewPage() {
                       <td className="py-2 px-3 text-right tabular-nums">{c.orders}</td>
                       <td className="py-2 px-3 text-right tabular-nums font-semibold text-emerald-600">${c.sales.toFixed(2)}</td>
                       <td className="py-2 px-3 text-right tabular-nums">
-                        <span className={c.acos > 50 ? "text-red-500" : c.acos > 30 ? "text-amber-500" : "text-emerald-500"}>
-                          {c.acos.toFixed(1)}%
+                        <span className={acosColorClass(c.acos, c.sales, c.cost)}>
+                          {formatAcos(c.acos, c.sales, c.cost)}
                         </span>
                       </td>
                     </tr>

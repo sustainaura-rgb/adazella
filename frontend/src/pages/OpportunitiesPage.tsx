@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatAcos } from "@/lib/formatters";
 
 type Mode = "harvest" | "negatives" | "upgrades";
 
@@ -256,11 +257,8 @@ export default function OpportunitiesPage() {
                         <td className="py-2 px-3 text-right tabular-nums">{r.orders}</td>
                         <td className="py-2 px-3 text-right tabular-nums font-semibold text-emerald-600">${Number(r.sales || 0).toFixed(2)}</td>
                         <td className="py-2 px-3 text-right tabular-nums">
-                          <span className={cn(
-                            (r.acos || 0) > 50 ? "text-red-500" : (r.acos || 0) > 30 ? "text-amber-500" : "text-emerald-500",
-                            "font-semibold"
-                          )}>
-                            {(r.acos || 0).toFixed(1)}%
+                          <span className="font-semibold">
+                            {formatAcos(r.acos || 0, r.sales, r.cost)}
                           </span>
                         </td>
                       </>}

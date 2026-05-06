@@ -5,6 +5,8 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { scoreSearchTerm, categorizeTerm, negativityColor, type ProductProfile } from "@/lib/negativity";
 import { PageSkeleton } from "@/components/ui/Skeleton";
+import { formatAcos, acosColorClass } from "@/lib/formatters";
+import { toast } from "sonner";
 
 interface SearchTerm {
   search_term: string;
@@ -52,8 +54,9 @@ export default function SearchTermsPage() {
         ]);
         setRows(termsRes.data.rows || []);
         setProfile(profileRes.data);
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        console.error("Failed to load search terms", err);
+        toast.error(err?.response?.data?.error || "Couldn't load search terms");
       } finally {
         setLoading(false);
       }
@@ -264,8 +267,8 @@ export default function SearchTermsPage() {
                       <td className="py-2 px-3 text-right tabular-nums">{r.orders}</td>
                       <td className="py-2 px-3 text-right tabular-nums">${r.sales.toFixed(2)}</td>
                       <td className="py-2 px-3 text-right tabular-nums">
-                        <span className={r.acos > 50 ? "text-red-500 font-semibold" : r.acos > 30 ? "text-amber-500 font-semibold" : r.acos > 0 ? "text-emerald-500 font-semibold" : "text-slate-400"}>
-                          {r.acos.toFixed(1)}%
+                        <span className={cn(acosColorClass(r.acos, r.sales, r.cost), "font-semibold")}>
+                          {formatAcos(r.acos, r.sales, r.cost)}
                         </span>
                       </td>
                       <td className="py-2 px-3" title={r._negReason}>

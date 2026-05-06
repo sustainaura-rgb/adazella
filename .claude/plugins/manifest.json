@@ -1,15 +1,18 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "adazella-dev-kit",
-  "version": "0.3.0",
-  "description": "Adazella Agent Development Kit. 5-layer Claude Code setup with orchestrator + parallel agent team. Install once → every teammate gets the same superpowers.",
+  "version": "0.4.0",
+  "description": "Adazella Agent Development Kit. Full 5-layer Claude Code setup: orchestrator + 12 specialized agents + 6 skills + 5 hooks + 7 slash commands. Install once → every teammate gets the same superpowers.",
   "author": "Sustainaura LLC",
   "license": "Proprietary",
 
   "skills": [
     "skills/amazon-ads",
     "skills/stripe-billing",
-    "skills/aws-migration"
+    "skills/aws-migration",
+    "skills/postgres-rls",
+    "skills/openai-integration",
+    "skills/testing-patterns"
   ],
 
   "agents": {
@@ -18,14 +21,23 @@
       "orchestrator": "agents/orchestrator.md",
       "setup-agent": "agents/setup-agent.md",
       "api-agent": "agents/api-agent.md",
-      "frontend-agent": "agents/frontend-agent.md"
+      "frontend-agent": "agents/frontend-agent.md",
+      "scheduler-agent": "agents/scheduler-agent.md"
     },
 
-    "_comment_specialist": "Specialist agents — invoked individually for QA / review / focused tasks",
-    "specialists": {
+    "_comment_quality": "Quality + Safety — invoked individually for QA, security, validation",
+    "quality": {
       "code-reviewer": "agents/code-reviewer.md",
       "security-auditor": "agents/security-auditor.md",
       "test-runner": "agents/test-runner.md",
+      "data-validator": "agents/data-validator.md"
+    },
+
+    "_comment_specialist": "Domain specialists — invoked for specific deep-domain work",
+    "specialists": {
+      "ml-agent": "agents/ml-agent.md",
+      "migration-runner": "agents/migration-runner.md",
+      "release-manager": "agents/release-manager.md",
       "feature-dev": "agents/feature-dev.md"
     }
   },
@@ -39,23 +51,29 @@
   },
 
   "commands": [
+    "commands/standup.md",
+    "commands/eod.md",
+    "commands/test.md",
+    "commands/sprint-start.md",
     "commands/security-check.md",
     "commands/changelog-today.md",
     "commands/deploy-check.md"
   ],
 
   "_workflow": {
-    "_description": "Two ways to use the agents:",
-    "1_simple_task": "Invoke ONE specialist (e.g. code-reviewer) for focused work. Same context window.",
-    "2_complex_feature": "Invoke orchestrator → it dispatches setup-agent + api-agent + frontend-agent IN PARALLEL → each has own context → faster + cleaner main session"
+    "_description": "Three usage modes:",
+    "1_simple_bug_fix": "Talk to main session directly. No agents needed.",
+    "2_focused_specialist_task": "Invoke ONE specialist (e.g. ml-agent for AI features). Same context window.",
+    "3_complex_multi_layer_feature": "Invoke orchestrator → it dispatches setup-agent + api-agent + frontend-agent + scheduler-agent IN PARALLEL → each has own context → 4× faster main session"
   },
 
   "_install_instructions": [
     "When a new teammate joins:",
-    "1. They clone the adazella repo",
+    "1. Clone the adazella repo",
     "2. .claude/ directory comes with the repo (already in git)",
-    "3. They create their own CLAUDE.local.md (gitignored)",
+    "3. Create their own CLAUDE.local.md (gitignored, free-form scratchpad)",
     "4. Their Claude Code instance picks up settings.json automatically",
-    "5. They get: same skills + agents + hooks + slash commands as you"
+    "5. They get: same skills + agents + hooks + slash commands as you",
+    "6. Run /standup their first morning to verify everything wires up"
   ]
 }

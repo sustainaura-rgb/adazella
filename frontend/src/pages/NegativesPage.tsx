@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { PageSkeleton } from "@/components/ui/Skeleton";
+import { toast } from "sonner";
 
 interface Negative {
   id: number;
@@ -76,8 +77,9 @@ export default function NegativesPage() {
         setSummary(negRes.data.summary);
         setSuggestions(suggRes.data.rows || []);
         setSuggTotal(suggRes.data.total_wasted);
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        console.error("Failed to load negatives", err);
+        toast.error(err?.response?.data?.error || "Couldn't load negative keywords");
       } finally {
         setLoading(false);
       }

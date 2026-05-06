@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { formatAcos, acosColorClass } from "@/lib/formatters";
+import { toast } from "sonner";
 
 const PALETTE = ["#6366f1", "#a855f7", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#ef4444"];
 
@@ -49,8 +50,9 @@ export default function ProductsPage() {
           params: { sort: sortKey, limit: 500 },
         });
         setRows(data.rows || []);
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        console.error("Failed to load products", err);
+        toast.error(err?.response?.data?.error || "Couldn't load products");
       } finally {
         setLoading(false);
       }

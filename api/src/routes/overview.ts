@@ -163,7 +163,8 @@ overviewRouter.get("/", async (req, res) => {
     });
   } catch (err: any) {
     console.error("GET /api/overview error:", err);
-    res.status(500).json({ error: "Internal server error", detail: err.message });
+    // Server-side: log full detail. Client-side: generic message only — no err.message leak.
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

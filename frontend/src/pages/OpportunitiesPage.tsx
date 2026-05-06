@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatAcos } from "@/lib/formatters";
+import { toast } from "sonner";
 
 type Mode = "harvest" | "negatives" | "upgrades";
 
@@ -30,8 +31,9 @@ export default function OpportunitiesPage() {
           params: { days, limit: 500 },
         });
         setRows(data.rows || []);
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        console.error("Failed to load opportunities", err);
+        toast.error(err?.response?.data?.error || "Couldn't load opportunities");
         setRows([]);
       } finally {
         setLoading(false);

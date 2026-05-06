@@ -45,40 +45,55 @@ export default function DashboardLayout() {
   const showConnectBanner = me !== null && !me?.amazon_connection && !bannerDismissed;
 
   return (
-    <div className="min-h-screen flex bg-[rgb(var(--bg-app))]">
-      {/* ═══ Sidebar ═══ */}
+    <div className="min-h-screen flex bg-[rgb(var(--bg-app))] relative">
+      {/* Premium gradient mesh background — subtle ambient glow behind everything */}
+      <div className="fixed inset-0 bg-gradient-mesh opacity-60 pointer-events-none" />
+
+      {/* ═══ Premium Sidebar — glassmorphic ═══ */}
       <aside className={cn(
-        "bg-[rgb(var(--bg-surface))] border-r border-[rgb(var(--border))]",
+        "relative z-10",
+        "bg-[rgb(var(--bg-surface))]/85 backdrop-blur-2xl",
+        "border-r border-[rgb(var(--border))]",
         "sticky top-0 h-screen overflow-y-auto transition-all duration-300 flex flex-col",
-        sidebarOpen ? "w-60 px-4" : "w-16 px-2",
+        sidebarOpen ? "w-64 px-4" : "w-16 px-2",
         "py-4"
       )}>
         {/* Toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="self-end mb-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+          className={cn(
+            "self-end mb-2 p-1.5 rounded-lg transition-all",
+            "text-[rgb(var(--text-muted))] hover:text-[rgb(var(--text-primary))]",
+            "hover:bg-[rgb(var(--bg-muted))]"
+          )}
           title={sidebarOpen ? "Collapse" : "Expand"}
         >
           {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
         </button>
 
-        {/* Brand */}
-        <div className={cn("flex items-center gap-3 pb-4 mb-2 border-b border-[rgb(var(--border))]",
-                           sidebarOpen ? "px-1" : "justify-center")}>
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center shrink-0">
-            <Zap className="text-white" size={18} strokeWidth={2.5} />
+        {/* Brand — premium with glow */}
+        <div className={cn(
+          "flex items-center gap-3 pb-5 mb-3 border-b border-[rgb(var(--border))]",
+          sidebarOpen ? "px-1" : "justify-center"
+        )}>
+          <div className="relative w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0 shadow-glow-sm">
+            <Zap className="text-white relative z-10" size={20} strokeWidth={2.5} />
+            {/* Subtle inner glow */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent" />
           </div>
           {sidebarOpen && (
             <div>
-              <div className="text-base font-black bg-gradient-to-br from-brand-500 to-purple-500 bg-clip-text text-transparent leading-none">
-                AdPilot
+              <div className="text-lg font-black text-gradient leading-none tracking-tight">
+                Adazella
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Amazon Ads</div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-[rgb(var(--text-muted))] mt-1">
+                Amazon Ads
+              </div>
             </div>
           )}
         </div>
 
-        {/* Nav */}
+        {/* Nav — animated active state with glow */}
         <nav className="flex flex-col gap-1 flex-1">
           {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -86,38 +101,67 @@ export default function DashboardLayout() {
               to={to}
               end={to === "/dashboard"}
               className={({ isActive }) => cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition",
-                "text-slate-600 dark:text-slate-300",
+                "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-gradient-to-r from-brand-500/15 to-purple-500/15 text-brand-600 dark:text-brand-400 shadow-sm"
-                  : "hover:bg-slate-100 dark:hover:bg-slate-800",
+                  ? "text-[rgb(var(--text-primary))] bg-gradient-to-r from-brand-500/12 to-purple-500/8 shadow-soft"
+                  : "text-[rgb(var(--text-secondary))] hover:text-[rgb(var(--text-primary))] hover:bg-[rgb(var(--bg-muted))]",
                 !sidebarOpen && "justify-center"
               )}
               title={!sidebarOpen ? label : undefined}
             >
-              <Icon size={17} className="shrink-0" />
-              {sidebarOpen && <span>{label}</span>}
+              {({ isActive }) => (
+                <>
+                  {/* Active indicator — left bar */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-gradient-brand shadow-glow-sm" />
+                  )}
+                  <Icon
+                    size={17}
+                    className={cn(
+                      "shrink-0 transition-transform group-hover:scale-110",
+                      isActive && "text-brand-500 dark:text-brand-400"
+                    )}
+                  />
+                  {sidebarOpen && <span>{label}</span>}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        {/* Trial badge */}
+        {/* Trial badge — premium glow */}
         {sidebarOpen && me?.workspace.plan === "trial" && (
-          <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg text-[11px] text-amber-700 dark:text-amber-400">
-            <div className="font-semibold">🎁 Trial — {trialDaysLeft} days left</div>
-            <div className="text-amber-600 dark:text-amber-500 mt-0.5">Upgrade for unlimited access</div>
+          <div className="mb-3 mt-3 p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 ring-1 ring-amber-500/10 shadow-soft">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={12} className="text-amber-500" strokeWidth={2.5} />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                Trial · {trialDaysLeft}d left
+              </span>
+            </div>
+            <button className="text-[11px] text-[rgb(var(--text-secondary))] hover:text-[rgb(var(--text-primary))] transition">
+              Upgrade for unlimited access →
+            </button>
           </div>
         )}
 
-        {/* User + theme + sign out */}
+        {/* User + theme + sign out — bottom panel */}
         <div className="border-t border-[rgb(var(--border))] pt-3 mt-2">
           {sidebarOpen ? (
             <div className="flex flex-col gap-1">
-              <div className="text-xs text-slate-500 truncate px-1 mb-1">{user?.email}</div>
+              <div className="px-1 mb-2">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-[rgb(var(--text-muted))] mb-0.5">
+                  Signed in as
+                </div>
+                <div className="text-xs text-[rgb(var(--text-secondary))] truncate">{user?.email}</div>
+              </div>
               <ThemeToggle />
               <button
                 onClick={() => signOut().then(() => nav("/login"))}
-                className="w-full px-3 py-1.5 text-xs text-slate-500 hover:text-red-500 flex items-center gap-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={cn(
+                  "w-full px-3 py-1.5 text-xs flex items-center gap-2 rounded-lg transition",
+                  "text-[rgb(var(--text-muted))] hover:text-rose-500",
+                  "hover:bg-rose-500/10"
+                )}
               >
                 <LogOut size={13} /> Sign out
               </button>
@@ -127,7 +171,7 @@ export default function DashboardLayout() {
               <ThemeToggle compact />
               <button
                 onClick={() => signOut().then(() => nav("/login"))}
-                className="w-full p-2 text-slate-500 hover:text-red-500 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="w-full p-2 text-[rgb(var(--text-muted))] hover:text-rose-500 flex items-center justify-center rounded-lg hover:bg-rose-500/10 transition"
                 title="Sign out"
               >
                 <LogOut size={14} />
@@ -138,14 +182,16 @@ export default function DashboardLayout() {
       </aside>
 
       {/* ═══ Main ═══ */}
-      <main className="flex-1 overflow-x-hidden flex flex-col">
-        {/* Non-blocking connect banner */}
+      <main className="flex-1 overflow-x-hidden flex flex-col relative z-10">
+        {/* Premium connect banner — gradient + glow */}
         {showConnectBanner && (
-          <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/30 px-6 py-3 flex items-center gap-3 text-sm">
-            <AlertTriangle size={16} className="text-amber-600 shrink-0" />
-            <span className="text-amber-800 dark:text-amber-300 flex-1">
-              Connect your Amazon Ads account to see real campaign data.
-              Currently showing <strong>demo data</strong>.
+          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/8 to-pink-500/10 border-b border-amber-500/20 px-6 py-3 flex items-center gap-3 text-sm backdrop-blur-sm">
+            <div className="w-7 h-7 rounded-lg bg-gradient-warning flex items-center justify-center shadow-glow-sm">
+              <AlertTriangle size={14} className="text-white" strokeWidth={2.5} />
+            </div>
+            <span className="text-[rgb(var(--text-primary))] flex-1">
+              <strong className="font-semibold">Connect your Amazon Ads account</strong>
+              <span className="text-[rgb(var(--text-secondary))] ml-2">to replace demo data with your real campaigns</span>
             </span>
             <button
               onClick={async () => {
@@ -156,13 +202,13 @@ export default function DashboardLayout() {
                   // silent
                 }
               }}
-              className="px-3 py-1.5 bg-gradient-to-br from-brand-500 to-purple-500 text-white rounded-lg text-xs font-semibold hover:shadow transition inline-flex items-center gap-1.5"
+              className="btn-premium text-xs px-3 py-1.5"
             >
               <Link2 size={13} /> Connect Amazon
             </button>
             <button
               onClick={() => setBannerDismissed(true)}
-              className="text-amber-600 hover:text-amber-800 text-xs font-semibold"
+              className="text-[rgb(var(--text-muted))] hover:text-[rgb(var(--text-primary))] transition text-xs font-semibold w-7 h-7 rounded-lg hover:bg-[rgb(var(--bg-muted))] flex items-center justify-center"
               title="Dismiss"
             >
               ✕

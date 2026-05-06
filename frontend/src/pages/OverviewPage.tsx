@@ -5,13 +5,16 @@ import {
 } from "recharts";
 import {
   Eye, MousePointerClick, DollarSign, ShoppingCart, Percent,
-  ArrowUp, ArrowDown, Package, AlertTriangle, Bell, XCircle,
+  Package, AlertTriangle, Bell, XCircle,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatAcos, acosColorClass } from "@/lib/formatters";
 import { toast } from "sonner";
+import { KPITile } from "@/components/ui/KPITile";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { PremiumCard } from "@/components/ui/PremiumCard";
 
 const PALETTE = ["#6366f1", "#a855f7", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#ef4444"];
 const DAYS_OPTIONS = [7, 14, 30, 60, 90];
@@ -74,13 +77,13 @@ export default function OverviewPage() {
     const y = data.yesterday;
     return [
       { label: "Spend",       value: `$${t.cost.toFixed(2)}`,       delta: formatDelta(t.cost, y.cost),
-        Icon: DollarSign,     gradient: "from-indigo-500 to-purple-500" },
+        Icon: DollarSign,     gradient: "from-brand-500 to-purple-500", inverse: true },
       { label: "Sales",       value: `$${t.sales.toFixed(2)}`,      delta: formatDelta(t.sales, y.sales),
         Icon: ShoppingCart,   gradient: "from-emerald-500 to-cyan-500" },
       { label: "Orders",      value: t.orders,                       delta: formatDelta(t.orders, y.orders),
         Icon: Package,        gradient: "from-amber-500 to-pink-500" },
       { label: "ACoS",        value: formatAcos(t.acos, t.sales, t.cost), delta: formatDelta(t.acos, y.acos), inverse: true,
-        Icon: Percent,        gradient: "from-pink-500 to-red-500" },
+        Icon: Percent,        gradient: "from-rose-500 to-pink-500" },
       { label: "Clicks",      value: t.clicks.toLocaleString(),     delta: formatDelta(t.clicks, y.clicks),
         Icon: MousePointerClick, gradient: "from-blue-500 to-indigo-500" },
       { label: "Impressions", value: t.impressions.toLocaleString(),delta: formatDelta(t.impressions, y.impressions),
@@ -116,25 +119,28 @@ export default function OverviewPage() {
   })();
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto flex flex-col gap-5 animate-fade-in">
-      {/* Header */}
-      <div className="flex justify-between items-center flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-black bg-gradient-to-br from-brand-500 to-purple-500 bg-clip-text text-transparent">
-            Overview
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Today's snapshot with {days}-day trends
-          </p>
-        </div>
-      </div>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto flex flex-col gap-6 animate-fade-in">
+      {/* Premium page header */}
+      <PageHeader
+        title="Overview"
+        description={`Today's snapshot with ${days}-day trend analysis`}
+        badge={
+          <span className="badge-info">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-subtle" />
+            Live
+          </span>
+        }
+      />
 
-      {/* Alerts banner */}
+
+      {/* Alerts banner — premium card with subtle warning glow */}
       {visibleAlerts.length > 0 && (
-        <div className="card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Bell size={14} className="text-amber-500" />
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+        <PremiumCard variant="premium" glowColor="warning">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg bg-gradient-warning flex items-center justify-center shadow-glow-sm">
+              <Bell size={14} className="text-white" strokeWidth={2.5} />
+            </div>
+            <span className="text-xs font-bold text-[rgb(var(--text-secondary))] uppercase tracking-wider">
               Alerts ({visibleAlerts.length})
             </span>
           </div>
@@ -154,39 +160,23 @@ export default function OverviewPage() {
               </div>
             ))}
           </div>
-        </div>
+        </PremiumCard>
       )}
 
-      {/* KPI cards */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-        {kpis.map((k, idx) => {
-          const Icon = k.Icon;
-          const up = k.delta.up;
-          const DeltaIcon = up ? ArrowUp : ArrowDown;
-          return (
-            <div key={k.label} className={`relative overflow-hidden rounded-2xl p-5 text-white shadow-lg bg-gradient-to-br ${k.gradient} hover:scale-[1.02] transition cursor-default`}
-                 style={{ animation: `slideUp 0.4s cubic-bezier(0.4,0,0.2,1) ${idx * 0.05}s both` }}>
-              {/* Decorative icon */}
-              <div className="absolute -top-4 -right-4 opacity-10">
-                <Icon size={110} />
-              </div>
-              {/* Shine overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-              {/* Content */}
-              <div className="relative">
-                <div className="text-[10px] font-bold tracking-widest opacity-80 uppercase">{k.label}</div>
-                <div className="text-2xl font-black mt-1.5 tracking-tight">{k.value}</div>
-                {k.delta.pct !== null && (
-                  <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-black/20 backdrop-blur rounded-full text-[11px] font-bold">
-                    <DeltaIcon size={11} />
-                    {k.delta.text}
-                    <span className="opacity-70 ml-1">vs prev</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      {/* KPI cards — premium tiles */}
+      <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+        {kpis.map((k, idx) => (
+          <div key={k.label} style={{ animation: `slideUp 0.5s cubic-bezier(0.16,1,0.3,1) ${idx * 0.04}s both` }}>
+            <KPITile
+              label={k.label}
+              value={k.value}
+              delta={k.delta.pct ?? undefined}
+              inverse={k.inverse}
+              icon={k.Icon}
+              iconGradient={k.gradient}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Conversion funnel */}

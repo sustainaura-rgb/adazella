@@ -3,38 +3,255 @@
 @tailwind utilities;
 
 @layer base {
+  /* ─────────────────────────────────────────────────────────
+     Light theme — clean + professional
+     ───────────────────────────────────────────────────────── */
   :root {
-    --bg-app: 250 250 252;
-    --bg-surface: 255 255 255;
+    --bg-app: 248 250 252;            /* Slate-50 — softer than pure white */
+    --bg-surface: 255 255 255;        /* Pure white for elevated panels */
     --bg-card: 255 255 255;
-    --text-primary: 15 23 42;
-    --text-secondary: 71 85 105;
-    --text-muted: 148 163 184;
-    --border: 226 232 240;
+    --bg-card-hover: 250 250 252;
+    --bg-muted: 241 245 249;          /* Slate-100 — subtle dividers */
+    --text-primary: 15 23 42;         /* Slate-900 */
+    --text-secondary: 71 85 105;      /* Slate-600 */
+    --text-muted: 148 163 184;        /* Slate-400 */
+    --border: 226 232 240;            /* Slate-200 */
+    --border-strong: 203 213 225;     /* Slate-300 */
+    --ring: 99 102 241;               /* Brand-500 */
+
+    /* Status colors */
+    --success: 16 185 129;            /* Emerald-500 */
+    --warning: 245 158 11;            /* Amber-500 */
+    --danger: 244 63 94;              /* Rose-500 */
   }
 
+  /* ─────────────────────────────────────────────────────────
+     Dark theme — rich + premium (Tradezella-inspired)
+     Deeper blacks, more contrast, glow accents
+     ───────────────────────────────────────────────────────── */
   .dark {
-    --bg-app: 6 10 20;
-    --bg-surface: 12 18 34;
-    --bg-card: 17 24 39;
-    --text-primary: 241 245 249;
-    --text-secondary: 148 163 184;
-    --text-muted: 100 116 139;
-    --border: 30 41 59;
+    --bg-app: 7 11 22;                /* Deep navy-black */
+    --bg-surface: 13 17 33;           /* Slightly lighter surface */
+    --bg-card: 17 22 41;              /* Card background */
+    --bg-card-hover: 22 28 50;
+    --bg-muted: 24 31 56;             /* Subtle row backgrounds */
+    --text-primary: 248 250 252;      /* Crisp white */
+    --text-secondary: 148 163 184;    /* Muted slate */
+    --text-muted: 100 116 139;        /* More muted */
+    --border: 30 41 59;               /* Slate-800 — subtle */
+    --border-strong: 51 65 85;        /* Slate-700 */
+    --ring: 129 140 248;              /* Brand-400 (brighter for dark) */
+
+    --success: 52 211 153;            /* Emerald-400 (brighter for dark) */
+    --warning: 251 191 36;            /* Amber-400 */
+    --danger: 251 113 133;            /* Rose-400 */
   }
 
   html {
-    @apply antialiased;
+    @apply antialiased scroll-smooth;
   }
 
   body {
     @apply bg-[rgb(var(--bg-app))] text-[rgb(var(--text-primary))] font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    /* Subtle dot pattern background — premium texture */
+    background-image: radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image: radial-gradient(circle, rgba(129,140,248,0.05) 1px, transparent 1px);
+  }
+
+  /* Tabular numbers — KPIs always align */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--bg-app));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--border-strong));
+    border-radius: 8px;
+    border: 2px solid rgb(var(--bg-app));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--text-muted));
   }
 }
 
 @layer components {
+  /* ─────────────────────────────────────────────────────────
+     Card — premium glassmorphic feel
+     ───────────────────────────────────────────────────────── */
   .card {
-    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border))] rounded-2xl shadow-sm;
+    @apply bg-[rgb(var(--bg-card))]
+           border border-[rgb(var(--border))]
+           rounded-2xl
+           shadow-soft
+           transition-all duration-300;
+  }
+
+  .card-premium {
+    @apply bg-[rgb(var(--bg-card))]
+           border border-[rgb(var(--border))]
+           rounded-2xl
+           shadow-premium
+           transition-all duration-300;
+  }
+
+  .card-glass {
+    @apply bg-[rgb(var(--bg-card))]/80
+           backdrop-blur-xl
+           border border-[rgb(var(--border))]
+           rounded-2xl
+           shadow-premium
+           transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:shadow-premium-lg
+           hover:-translate-y-0.5
+           hover:border-[rgb(var(--border-strong))];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Hero gradient text (for page titles)
+     ───────────────────────────────────────────────────────── */
+  .text-gradient {
+    @apply bg-gradient-brand bg-clip-text text-transparent;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Status badges — premium glowing pills
+     ───────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1.5
+           px-2.5 py-0.5
+           rounded-full text-[11px] font-semibold
+           transition-all;
+  }
+
+  .badge-success {
+    @apply badge
+           bg-emerald-500/10
+           text-emerald-600 dark:text-emerald-400
+           ring-1 ring-emerald-500/20;
+  }
+
+  .badge-warning {
+    @apply badge
+           bg-amber-500/10
+           text-amber-600 dark:text-amber-400
+           ring-1 ring-amber-500/20;
+  }
+
+  .badge-danger {
+    @apply badge
+           bg-rose-500/10
+           text-rose-600 dark:text-rose-400
+           ring-1 ring-rose-500/20;
+  }
+
+  .badge-info {
+    @apply badge
+           bg-brand-500/10
+           text-brand-600 dark:text-brand-400
+           ring-1 ring-brand-500/20;
+  }
+
+  .badge-muted {
+    @apply badge
+           bg-slate-500/10
+           text-slate-500 dark:text-slate-400
+           ring-1 ring-slate-500/20;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Premium button — gradient with glow on hover
+     ───────────────────────────────────────────────────────── */
+  .btn-premium {
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2
+           rounded-xl
+           font-semibold text-sm
+           bg-gradient-brand text-white
+           shadow-glow-sm
+           transition-all duration-200
+           hover:shadow-glow hover:scale-[1.02]
+           active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2
+           rounded-xl
+           font-semibold text-sm
+           bg-[rgb(var(--bg-muted))]
+           text-[rgb(var(--text-primary))]
+           border border-[rgb(var(--border))]
+           transition-all duration-200
+           hover:bg-[rgb(var(--bg-card-hover))]
+           hover:border-[rgb(var(--border-strong))]
+           active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Hero number — for KPI tiles
+     ───────────────────────────────────────────────────────── */
+  .text-hero {
+    @apply text-kpi tabular-nums tracking-tight;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Subtle separator
+     ───────────────────────────────────────────────────────── */
+  .divider {
+    @apply h-px bg-[rgb(var(--border))];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Shimmer placeholder for loading
+     ───────────────────────────────────────────────────────── */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--bg-muted)) 0%,
+      rgb(var(--bg-card-hover)) 50%,
+      rgb(var(--bg-muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* Dot pattern overlay (use as bg-dots) */
+  .bg-dots {
+    background-image: radial-gradient(circle, rgba(99,102,241,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Subtle inner glow for cards (premium feel) */
+  .glow-border {
+    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.08);
+  }
+
+  .dark .glow-border {
+    box-shadow: inset 0 0 0 1px rgba(129,140,248,0.12);
+  }
+
+  /* Text shadow for emphasized headings */
+  .text-shadow-glow {
+    text-shadow: 0 0 32px rgba(99,102,241,0.3);
   }
 }

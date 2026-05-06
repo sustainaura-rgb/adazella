@@ -1,9 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "adazella-dev-kit",
-  "version": "0.1.0",
-  "description": "Adazella project's bundled Claude Code skills, agents, and hooks. Install once → every teammate gets the same Claude setup.",
+  "version": "0.2.0",
+  "description": "Adazella project's bundled Claude Code skills, agents, hooks, and slash commands. Install once → every teammate gets the same Claude setup.",
   "author": "Sustainaura LLC",
+  "license": "Proprietary",
 
   "skills": [
     "skills/amazon-ads",
@@ -13,13 +14,30 @@
 
   "agents": [
     "agents/code-reviewer.md",
-    "agents/security-auditor.md"
+    "agents/security-auditor.md",
+    "agents/test-runner.md",
+    "agents/feature-dev.md"
   ],
 
   "hooks": {
+    "SessionStart": "hooks/session-start.sh",
     "PreToolUse": "hooks/pre-tool-use.sh",
-    "PostToolUse": "hooks/post-tool-use.sh"
+    "PostToolUse": "hooks/post-tool-use.sh",
+    "Stop": "hooks/stop.sh",
+    "SubagentStop": "hooks/subagent-stop.sh"
   },
 
-  "_comment": "When teammates join, they run: claude code plugin install adazella-dev-kit. Their Claude Code instance gets the same skills/agents/hooks as yours."
+  "commands": [
+    "commands/security-check.md",
+    "commands/changelog-today.md",
+    "commands/deploy-check.md"
+  ],
+
+  "_install_instructions": [
+    "When a new teammate joins:",
+    "1. They clone the adazella repo",
+    "2. .claude/ directory comes with the repo",
+    "3. Their Claude Code instance picks up the setup automatically",
+    "4. They get: same skills + agents + hooks + slash commands"
+  ]
 }

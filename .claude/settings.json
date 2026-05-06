@@ -18,7 +18,9 @@
       "Bash(git push origin main)",
       "Bash(npx tsc:*)",
       "Bash(pip install:*)",
-      "Bash(python -m:*)"
+      "Bash(python -m:*)",
+      "Bash(bash .claude/hooks/*)",
+      "Bash(bash .claude/skills/*/scripts/*)"
     ],
     "deny": [
       "Bash(rm -rf /:*)",
@@ -33,6 +35,16 @@
   },
 
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -51,6 +63,26 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/post-tool-use.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/subagent-stop.sh"
           }
         ]
       }

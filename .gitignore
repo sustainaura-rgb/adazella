@@ -48,3 +48,8 @@ coverage/
 
 # Local uploads
 uploads/
+
+# Local Claude notes (never commit personal scratchpad)
+CLAUDE.local.md
+.claude/local/
+

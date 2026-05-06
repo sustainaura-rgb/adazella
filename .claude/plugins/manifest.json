@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "adazella-dev-kit",
-  "version": "0.2.0",
-  "description": "Adazella project's bundled Claude Code skills, agents, hooks, and slash commands. Install once → every teammate gets the same Claude setup.",
+  "version": "0.3.0",
+  "description": "Adazella Agent Development Kit. 5-layer Claude Code setup with orchestrator + parallel agent team. Install once → every teammate gets the same superpowers.",
   "author": "Sustainaura LLC",
   "license": "Proprietary",
 
@@ -12,12 +12,23 @@
     "skills/aws-migration"
   ],
 
-  "agents": [
-    "agents/code-reviewer.md",
-    "agents/security-auditor.md",
-    "agents/test-runner.md",
-    "agents/feature-dev.md"
-  ],
+  "agents": {
+    "_comment_team": "Agent Team — orchestrator dispatches these in parallel for multi-layer features",
+    "team": {
+      "orchestrator": "agents/orchestrator.md",
+      "setup-agent": "agents/setup-agent.md",
+      "api-agent": "agents/api-agent.md",
+      "frontend-agent": "agents/frontend-agent.md"
+    },
+
+    "_comment_specialist": "Specialist agents — invoked individually for QA / review / focused tasks",
+    "specialists": {
+      "code-reviewer": "agents/code-reviewer.md",
+      "security-auditor": "agents/security-auditor.md",
+      "test-runner": "agents/test-runner.md",
+      "feature-dev": "agents/feature-dev.md"
+    }
+  },
 
   "hooks": {
     "SessionStart": "hooks/session-start.sh",
@@ -33,11 +44,18 @@
     "commands/deploy-check.md"
   ],
 
+  "_workflow": {
+    "_description": "Two ways to use the agents:",
+    "1_simple_task": "Invoke ONE specialist (e.g. code-reviewer) for focused work. Same context window.",
+    "2_complex_feature": "Invoke orchestrator → it dispatches setup-agent + api-agent + frontend-agent IN PARALLEL → each has own context → faster + cleaner main session"
+  },
+
   "_install_instructions": [
     "When a new teammate joins:",
     "1. They clone the adazella repo",
-    "2. .claude/ directory comes with the repo",
-    "3. Their Claude Code instance picks up the setup automatically",
-    "4. They get: same skills + agents + hooks + slash commands"
+    "2. .claude/ directory comes with the repo (already in git)",
+    "3. They create their own CLAUDE.local.md (gitignored)",
+    "4. Their Claude Code instance picks up settings.json automatically",
+    "5. They get: same skills + agents + hooks + slash commands as you"
   ]
 }
